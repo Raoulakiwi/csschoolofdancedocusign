@@ -134,9 +134,9 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   const photographyConsent = body.photographyConsent === 'yes' 
-    ? '✓ I DO give consent for my child to be photographed and/or videoed.'
+    ? '[X] I DO give consent for my child to be photographed and/or videoed.'
     : body.photographyConsent === 'no'
-    ? '✓ I DO NOT give consent for my child to be photographed and/or videoed.'
+    ? '[X] I DO NOT give consent for my child to be photographed and/or videoed.'
     : '—'
   yPos += addText(photographyConsent, margin, yPos, pageWidth - margin * 2)
   yPos += sectionSpacing
@@ -150,7 +150,7 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   const useConsent = body.useOfImagesConsent 
-    ? '✓ I consent to the use of my child\'s images and/or video for all of the purposes listed above.'
+    ? '[X] I consent to the use of my child\'s images and/or video for all of the purposes listed above.'
     : '—'
   yPos += addText(useConsent, margin, yPos, pageWidth - margin * 2)
   yPos += sectionSpacing
@@ -164,9 +164,9 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   const duration = [
-    body.durationCurrentYear && '✓ Applies for the current calendar year only',
-    body.durationFullInvolvement && '✓ Applies for the duration of my child\'s involvement with the organisation',
-    body.durationOther && (body.durationOtherText ? `✓ Other: ${body.durationOtherText}` : '✓ Other'),
+    body.durationCurrentYear && '[X] Applies for the current calendar year only',
+    body.durationFullInvolvement && '[X] Applies for the duration of my child\'s involvement with the organisation',
+    body.durationOther && (body.durationOtherText ? `[X] Other: ${body.durationOtherText}` : '[X] Other'),
   ].filter(Boolean).join('\n') || '—'
   yPos += addText(duration, margin, yPos, pageWidth - margin * 2)
   yPos += sectionSpacing
