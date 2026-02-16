@@ -164,7 +164,9 @@ export default function ConsentForm() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit form')
+        const msg = result.error || 'Failed to submit form'
+        const hint = result.hint ? ` ${result.hint}` : ''
+        throw new Error(msg + hint)
       }
 
       setSubmitStatus('success')
