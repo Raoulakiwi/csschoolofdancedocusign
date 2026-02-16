@@ -12,21 +12,12 @@ export default function ConsentForm() {
     relationshipToChild: '',
     parentPhone: '',
     parentEmail: '',
-    schoolAddress: '',
-    schoolPhone: '',
-    schoolEmail: '',
     
-    // Consent for Photography & Video
-    photographed: false,
-    videoRecorded: false,
+    // Consent for Photography & Video ('yes' | 'no' | '')
+    photographyConsent: '' as '' | 'yes' | 'no',
     
-    // Use of Images and Video
-    useSocialMedia: false,
-    useWebsite: false,
-    usePromotional: false,
-    useAdvertising: false,
-    useNewsletters: false,
-    useMediaReleases: false,
+    // Use of Images and Video (single consent for all purposes)
+    useOfImagesConsent: false,
     
     // Duration of Consent
     durationCurrentYear: false,
@@ -51,6 +42,14 @@ export default function ConsentForm() {
     const { name, value, type } = e.target
     const checked = (e.target as HTMLInputElement).checked
     
+    // Handle photography consent (mutually exclusive)
+    if (name === 'photographyConsentYes' || name === 'photographyConsentNo') {
+      setFormData(prev => ({
+        ...prev,
+        photographyConsent: name === 'photographyConsentYes' ? (checked ? 'yes' : '') : (checked ? 'no' : ''),
+      }))
+      return
+    }
     // Handle duration radio-like behavior
     if (name === 'durationCurrentYear' || name === 'durationFullInvolvement' || name === 'durationOther') {
       setFormData(prev => ({
@@ -88,22 +87,14 @@ export default function ConsentForm() {
     if (!formData.parentEmail.trim()) return 'Parent email address is required'
     if (!formData.parentEmail.includes('@')) return 'Please enter a valid email address'
     
-    // School Details
-    if (!formData.schoolAddress.trim()) return 'School address is required'
-    if (!formData.schoolPhone.trim()) return 'School phone number is required'
-    if (!formData.schoolEmail.trim()) return 'School email is required'
-    
-    // Consent for Photography & Video - at least one must be selected
-    if (!formData.photographed && !formData.videoRecorded) {
-      return 'Please select at least one consent option (Photographed or Video recorded)'
+    // Consent for Photography & Video - one option must be selected
+    if (formData.photographyConsent !== 'yes' && formData.photographyConsent !== 'no') {
+      return 'Please select either "I DO give consent" or "I DO NOT consent" for photography and video'
     }
     
-    // Use of Images - at least one must be selected
-    const anyUseSelected = formData.useSocialMedia || formData.useWebsite || 
-                          formData.usePromotional || formData.useAdvertising || 
-                          formData.useNewsletters || formData.useMediaReleases
-    if (!anyUseSelected) {
-      return 'Please select at least one use permission for images/videos'
+    // Use of Images - consent must be given
+    if (!formData.useOfImagesConsent) {
+      return 'Please confirm your consent for the use of images and video as described above'
     }
     
     // Duration - exactly one must be selected
@@ -188,17 +179,8 @@ export default function ConsentForm() {
         relationshipToChild: '',
         parentPhone: '',
         parentEmail: '',
-        schoolAddress: '',
-        schoolPhone: '',
-        schoolEmail: '',
-        photographed: false,
-        videoRecorded: false,
-        useSocialMedia: false,
-        useWebsite: false,
-        usePromotional: false,
-        useAdvertising: false,
-        useNewsletters: false,
-        useMediaReleases: false,
+        photographyConsent: '' as '' | 'yes' | 'no',
+        useOfImagesConsent: false,
         durationCurrentYear: false,
         durationFullInvolvement: false,
         durationOther: false,
@@ -262,56 +244,6 @@ export default function ConsentForm() {
                 Organisation Details
               </h2>
               <p className="text-sm text-gray-600">Organisation Name: <strong>Caroline Small School of Dance</strong></p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="schoolAddress" className="block text-sm font-medium text-gray-700 mb-1">
-                    Address <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="schoolAddress"
-                    name="schoolAddress"
-                    value={formData.schoolAddress}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="School address"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="schoolPhone" className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    id="schoolPhone"
-                    name="schoolPhone"
-                    value={formData.schoolPhone}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="School phone"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="schoolEmail" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  id="schoolEmail"
-                  name="schoolEmail"
-                  value={formData.schoolEmail}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="School email"
-                />
-              </div>
             </div>
 
             {/* 1. Child Details */}
@@ -451,30 +383,30 @@ export default function ConsentForm() {
                 3. Consent for Photography & Video
               </h2>
               <p className="text-sm text-gray-700">
-                I give permission for the above-named child to be: <span className="text-red-500">* (select at least one)</span>
+                <span className="text-red-500">* (select one)</span>
               </p>
               
               <div className="space-y-3 ml-4">
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    name="photographed"
-                    checked={formData.photographed}
+                    name="photographyConsentYes"
+                    checked={formData.photographyConsent === 'yes'}
                     onChange={handleInputChange}
                     className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <span className="text-gray-700">Photographed</span>
+                  <span className="text-gray-700">I DO give consent for my child to be photographed and/or video'd.</span>
                 </label>
 
                 <label className="flex items-center space-x-3">
                   <input
                     type="checkbox"
-                    name="videoRecorded"
-                    checked={formData.videoRecorded}
+                    name="photographyConsentNo"
+                    checked={formData.photographyConsent === 'no'}
                     onChange={handleInputChange}
                     className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <span className="text-gray-700">Video recorded</span>
+                  <span className="text-gray-700">I DO NOT consent</span>
                 </label>
               </div>
 
@@ -489,76 +421,19 @@ export default function ConsentForm() {
                 4. Use of Images and Video
               </h2>
               <p className="text-sm text-gray-700">
-                I understand and agree that photographs and/or video recordings of my child may be used for the following purposes: <span className="text-red-500">* (select at least one)</span>
+                I understand and agree that photographs and/or video recordings of my child may be used for the following purposes: social media (e.g., Facebook, Instagram, YouTube), organisation website, promotional materials (print and digital), advertising and marketing campaigns, newsletters, and media releases. <span className="text-red-500">*</span>
               </p>
               
-              <div className="space-y-3 ml-4">
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="useSocialMedia"
-                    checked={formData.useSocialMedia}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Social media (e.g., Facebook, Instagram, YouTube)</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="useWebsite"
-                    checked={formData.useWebsite}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Organisation website</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="usePromotional"
-                    checked={formData.usePromotional}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Promotional materials (print and digital)</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="useAdvertising"
-                    checked={formData.useAdvertising}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Advertising and marketing campaigns</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="useNewsletters"
-                    checked={formData.useNewsletters}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Newsletters</span>
-                </label>
-
-                <label className="flex items-center space-x-3">
-                  <input
-                    type="checkbox"
-                    name="useMediaReleases"
-                    checked={formData.useMediaReleases}
-                    onChange={handleInputChange}
-                    className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-                  />
-                  <span className="text-gray-700">Media releases</span>
-                </label>
-              </div>
+              <label className="flex items-start space-x-3 ml-4">
+                <input
+                  type="checkbox"
+                  name="useOfImagesConsent"
+                  checked={formData.useOfImagesConsent}
+                  onChange={handleInputChange}
+                  className="mt-1 h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
+                />
+                <span className="text-gray-700">I consent to the use of my child&apos;s images and/or video for all of the purposes listed above.</span>
+              </label>
 
               <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <p className="text-sm text-gray-700"><strong>I understand that:</strong></p>
