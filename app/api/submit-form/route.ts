@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { jsPDF } from 'jspdf'
 
 function buildEmailHtml(body: Record<string, unknown>) {
   const childName = body.childName ?? '—'
@@ -52,6 +53,192 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
+function generatePDF(body: Record<string, unknown>): string {
+  const doc = new jsPDF()
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+  let yPos = 20
+  const margin = 20
+  const lineHeight = 7
+  const sectionSpacing = 5
+
+  // Helper function to add text with word wrap
+  const addText = (text: string, x: number, y: number, maxWidth: number, fontSize = 10) => {
+    doc.setFontSize(fontSize)
+    const lines = doc.splitTextToSize(text, maxWidth)
+    doc.text(lines, x, y)
+    return lines.length * (fontSize * 0.4)
+  }
+
+  // Helper function to check if we need a new page
+  const checkNewPage = (requiredSpace: number) => {
+    if (yPos + requiredSpace > pageHeight - margin) {
+      doc.addPage()
+      yPos = margin
+    }
+  }
+
+  // Header
+  doc.setFontSize(18)
+  doc.setFont(undefined, 'bold')
+  doc.text('Caroline Small School of Dance', pageWidth / 2, yPos, { align: 'center' })
+  yPos += 8
+  doc.setFontSize(14)
+  doc.setFont(undefined, 'normal')
+  doc.text('Child Photography & Video Consent Form', pageWidth / 2, yPos, { align: 'center' })
+  yPos += sectionSpacing + 5
+
+  // Organisation Details
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('Organisation Details', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  doc.text('Organisation Name: Caroline Small School of Dance', margin, yPos)
+  yPos += sectionSpacing + lineHeight
+
+  // Child Details
+  checkNewPage(30)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('1. Child Details', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  yPos += addText(`Child's Full Name: ${body.childName || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += addText(`Date of Birth: ${body.childDOB || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += addText(`Address: ${body.childAddress || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += sectionSpacing
+
+  // Parent/Guardian Details
+  checkNewPage(30)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('2. Parent / Guardian Details', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  yPos += addText(`Full Name: ${body.parentName || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += addText(`Relationship to Child: ${body.relationshipToChild || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += addText(`Phone: ${body.parentPhone || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += addText(`Email: ${body.parentEmail || '—'}`, margin, yPos, pageWidth - margin * 2)
+  yPos += sectionSpacing
+
+  // Consent for Photography & Video
+  checkNewPage(20)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('3. Consent for Photography & Video', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  const photographyConsent = body.photographyConsent === 'yes' 
+    ? '✓ I DO give consent for my child to be photographed and/or videoed.'
+    : body.photographyConsent === 'no'
+    ? '✓ I DO NOT give consent for my child to be photographed and/or videoed.'
+    : '—'
+  yPos += addText(photographyConsent, margin, yPos, pageWidth - margin * 2)
+  yPos += sectionSpacing
+
+  // Use of Images and Video
+  checkNewPage(20)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('4. Use of Images and Video', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  const useConsent = body.useOfImagesConsent 
+    ? '✓ I consent to the use of my child\'s images and/or video for all of the purposes listed above.'
+    : '—'
+  yPos += addText(useConsent, margin, yPos, pageWidth - margin * 2)
+  yPos += sectionSpacing
+
+  // Duration of Consent
+  checkNewPage(20)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('5. Duration of Consent', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  const duration = [
+    body.durationCurrentYear && '✓ Applies for the current calendar year only',
+    body.durationFullInvolvement && '✓ Applies for the duration of my child\'s involvement with the organisation',
+    body.durationOther && (body.durationOtherText ? `✓ Other: ${body.durationOtherText}` : '✓ Other'),
+  ].filter(Boolean).join('\n') || '—'
+  yPos += addText(duration, margin, yPos, pageWidth - margin * 2)
+  yPos += sectionSpacing
+
+  // Safety Considerations
+  checkNewPage(30)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('6. Medical / Safety Considerations', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  const safetyConcerns = body.safetyConcerns === 'yes' ? 'Yes' : 'No'
+  yPos += addText(`Are there any legal, custody, or safety concerns regarding publication of your child's image? ${safetyConcerns}`, margin, yPos, pageWidth - margin * 2)
+  if (body.safetyConcerns === 'yes' && body.safetyConcernsDetails) {
+    yPos += addText(`Details: ${body.safetyConcernsDetails}`, margin, yPos, pageWidth - margin * 2)
+  }
+  yPos += sectionSpacing
+
+  // Signature
+  checkNewPage(40)
+  doc.setFontSize(12)
+  doc.setFont(undefined, 'bold')
+  doc.text('7. Parent / Guardian Signature', margin, yPos)
+  yPos += lineHeight
+  doc.setFontSize(10)
+  doc.setFont(undefined, 'normal')
+  
+  const signature = body.signature
+  const signatureType = body.signatureType
+  
+  if (signature && signatureType === 'draw' && typeof signature === 'string' && signature.startsWith('data:image')) {
+    // Draw signature - embed image
+    try {
+      const imgData = signature
+      const imgWidth = 80
+      const imgHeight = 30
+      doc.addImage(imgData, 'PNG', margin, yPos, imgWidth, imgHeight)
+      yPos += imgHeight + 5
+    } catch (err) {
+      console.error('Error adding signature image:', err)
+      doc.text('Signature: Provided (image)', margin, yPos)
+      yPos += lineHeight
+    }
+  } else if (signature && signatureType === 'type' && typeof signature === 'string') {
+    // Typed signature
+    doc.setFont(undefined, 'italic')
+    yPos += addText(`Signature: ${signature}`, margin, yPos, pageWidth - margin * 2)
+    doc.setFont(undefined, 'normal')
+  } else {
+    doc.text('Signature: Not provided', margin, yPos)
+    yPos += lineHeight
+  }
+
+  yPos += 5
+  const submissionDate = body.submissionDate
+    ? new Date(String(body.submissionDate)).toLocaleDateString('en-AU', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+    : new Date().toLocaleDateString('en-AU', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      })
+  doc.text(`Date: ${submissionDate}`, margin, yPos)
+
+  // Return PDF as base64 string
+  return doc.output('base64')
+}
+
 export async function POST(request: Request) {
   try {
     const resendApiKey = process.env.RESEND_API_KEY
@@ -64,55 +251,75 @@ export async function POST(request: Request) {
       )
     }
 
-    const schoolEmail = process.env.NOTIFICATION_EMAIL
-    if (!schoolEmail || schoolEmail === 'your-email@example.com') {
-      console.error('NOTIFICATION_EMAIL is not set or is still the placeholder')
-      return NextResponse.json(
-        { error: 'Server configuration error: NOTIFICATION_EMAIL is not set. Add it in Vercel → Project → Settings → Environment Variables (e.g. your school email).' },
-        { status: 500 }
-      )
-    }
+    // School email is hardcoded as requested
+    const schoolEmail = 'cs.schoolofdance@gmail.com'
 
     const resend = new Resend(resendApiKey)
     const body = (await request.json()) as Record<string, unknown>
     const childName = typeof body.childName === 'string' ? body.childName : 'Consent form'
-    const parentEmail = typeof body.parentEmail === 'string' ? body.parentEmail : null
+    const parentEmail = typeof body.parentEmail === 'string' && body.parentEmail.includes('@') 
+      ? body.parentEmail 
+      : null
 
+    // Generate PDF
+    let pdfBase64: string
+    try {
+      pdfBase64 = generatePDF(body)
+    } catch (pdfError) {
+      console.error('Error generating PDF:', pdfError)
+      return NextResponse.json(
+        { error: 'Failed to generate PDF document' },
+        { status: 500 }
+      )
+    }
+
+    const from = 'Caroline Small School of Dance <carolinesmall@wiland.com.au>'
     const emailHtml = buildEmailHtml(body)
-    const from = 'Caroline Small School of Dance <onboarding@resend.dev>'
-    const subject = `New Photo Consent Form: ${childName}`
+    const pdfFilename = `Consent-Form-${childName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.pdf`
 
-    // Send to school
+    // Prepare PDF attachment
+    const pdfAttachment = {
+      filename: pdfFilename,
+      content: pdfBase64,
+    }
+
+    // Send to school (cs.schoolofdance@gmail.com)
+    const schoolSubject = `New Photo Consent Form: ${childName}`
     const { data, error } = await resend.emails.send({
       from,
       to: schoolEmail,
-      subject,
+      subject: schoolSubject,
       html: emailHtml,
+      attachments: [pdfAttachment],
     })
 
     if (error) {
-      console.error('Resend error:', JSON.stringify(error, null, 2))
+      console.error('Resend error (school email):', JSON.stringify(error, null, 2))
       return NextResponse.json(
         {
-          error: 'Failed to send email',
+          error: 'Failed to send email to school',
           hint: 'On Resend free tier you can only send to the email you signed up with until you verify a domain. Set NOTIFICATION_EMAIL to that address, or verify your domain at resend.com.',
         },
         { status: 500 }
       )
     }
 
-    // Optionally send confirmation to parent (same Resend call limits apply)
-    if (parentEmail && parentEmail.includes('@') && parentEmail !== schoolEmail) {
+    // Send confirmation to parent with PDF
+    if (parentEmail) {
       const parentHtml = `
         <p>Dear ${escapeHtml(String(body.parentName || 'Parent/Guardian'))},</p>
         <p>This confirms we have received your photo and video consent form for <strong>${escapeHtml(String(childName))}</strong>.</p>
-        <p>Caroline Small School of Dance</p>
+        <p>Please find a copy of your completed consent form attached to this email for your records.</p>
+        <p>If you have any questions or need to withdraw consent, please contact Caroline Small School of Dance.</p>
+        <p>Best regards,<br>Caroline Small School of Dance</p>
       `
+      const parentSubject = `Your Photo & Video Consent Form - Caroline Small School of Dance`
       const parentResult = await resend.emails.send({
         from,
         to: parentEmail,
-        subject: `Your Photo & Video Consent Form - Caroline Small School of Dance`,
+        subject: parentSubject,
         html: parentHtml,
+        attachments: [pdfAttachment],
       })
       if (parentResult.error) {
         console.error('Resend error (parent email):', JSON.stringify(parentResult.error, null, 2))
