@@ -80,32 +80,32 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
 
   // Header
   doc.setFontSize(18)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('Caroline Small School of Dance', pageWidth / 2, yPos, { align: 'center' })
   yPos += 8
   doc.setFontSize(14)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   doc.text('Child Photography & Video Consent Form', pageWidth / 2, yPos, { align: 'center' })
   yPos += sectionSpacing + 5
 
   // Organisation Details
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('Organisation Details', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   doc.text('Organisation Name: Caroline Small School of Dance', margin, yPos)
   yPos += sectionSpacing + lineHeight
 
   // Child Details
   checkNewPage(30)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('1. Child Details', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   yPos += addText(`Child's Full Name: ${body.childName || '—'}`, margin, yPos, pageWidth - margin * 2)
   yPos += addText(`Date of Birth: ${body.childDOB || '—'}`, margin, yPos, pageWidth - margin * 2)
   yPos += addText(`Address: ${body.childAddress || '—'}`, margin, yPos, pageWidth - margin * 2)
@@ -114,11 +114,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Parent/Guardian Details
   checkNewPage(30)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('2. Parent / Guardian Details', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   yPos += addText(`Full Name: ${body.parentName || '—'}`, margin, yPos, pageWidth - margin * 2)
   yPos += addText(`Relationship to Child: ${body.relationshipToChild || '—'}`, margin, yPos, pageWidth - margin * 2)
   yPos += addText(`Phone: ${body.parentPhone || '—'}`, margin, yPos, pageWidth - margin * 2)
@@ -128,11 +128,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Consent for Photography & Video
   checkNewPage(20)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('3. Consent for Photography & Video', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   const photographyConsent = body.photographyConsent === 'yes' 
     ? '✓ I DO give consent for my child to be photographed and/or videoed.'
     : body.photographyConsent === 'no'
@@ -144,11 +144,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Use of Images and Video
   checkNewPage(20)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('4. Use of Images and Video', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   const useConsent = body.useOfImagesConsent 
     ? '✓ I consent to the use of my child\'s images and/or video for all of the purposes listed above.'
     : '—'
@@ -158,11 +158,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Duration of Consent
   checkNewPage(20)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('5. Duration of Consent', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   const duration = [
     body.durationCurrentYear && '✓ Applies for the current calendar year only',
     body.durationFullInvolvement && '✓ Applies for the duration of my child\'s involvement with the organisation',
@@ -174,11 +174,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Safety Considerations
   checkNewPage(30)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('6. Medical / Safety Considerations', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   const safetyConcerns = body.safetyConcerns === 'yes' ? 'Yes' : 'No'
   yPos += addText(`Are there any legal, custody, or safety concerns regarding publication of your child's image? ${safetyConcerns}`, margin, yPos, pageWidth - margin * 2)
   if (body.safetyConcerns === 'yes' && body.safetyConcernsDetails) {
@@ -189,11 +189,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
   // Signature
   checkNewPage(40)
   doc.setFontSize(12)
-  doc.setFont(undefined, 'bold')
+  doc.setFont('helvetica', 'bold')
   doc.text('7. Parent / Guardian Signature', margin, yPos)
   yPos += lineHeight
   doc.setFontSize(10)
-  doc.setFont(undefined, 'normal')
+  doc.setFont('helvetica', 'normal')
   
   const signature = body.signature
   const signatureType = body.signatureType
@@ -213,9 +213,9 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
     }
   } else if (signature && signatureType === 'type' && typeof signature === 'string') {
     // Typed signature
-    doc.setFont(undefined, 'italic')
+    doc.setFont('helvetica', 'italic')
     yPos += addText(`Signature: ${signature}`, margin, yPos, pageWidth - margin * 2)
-    doc.setFont(undefined, 'normal')
+    doc.setFont('helvetica', 'normal')
   } else {
     doc.text('Signature: Not provided', margin, yPos)
     yPos += lineHeight
