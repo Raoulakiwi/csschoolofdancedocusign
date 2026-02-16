@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
-import { jsPDF } from 'jspdf'
 
 function buildEmailHtml(body: Record<string, unknown>) {
   const childName = body.childName ?? '—'
@@ -53,7 +52,8 @@ function escapeHtml(s: string): string {
     .replace(/"/g, '&quot;')
 }
 
-function generatePDF(body: Record<string, unknown>): string {
+async function generatePDF(body: Record<string, unknown>): Promise<string> {
+  const { jsPDF } = await import('jspdf')
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
@@ -264,7 +264,7 @@ export async function POST(request: Request) {
     // Generate PDF
     let pdfBase64: string
     try {
-      pdfBase64 = generatePDF(body)
+      pdfBase64 = await generatePDF(body)
     } catch (pdfError) {
       console.error('Error generating PDF:', pdfError)
       return NextResponse.json(
