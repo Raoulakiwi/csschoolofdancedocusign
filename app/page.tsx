@@ -89,7 +89,7 @@ export default function ConsentForm() {
     
     // Consent for Photography & Video - one option must be selected
     if (formData.photographyConsent !== 'yes' && formData.photographyConsent !== 'no') {
-      return 'Please select either "I DO give consent" or "I DO NOT consent" for photography and video'
+      return 'Please select either "I DO give consent" or "I DO NOT give consent" for photography and video'
     }
     
     // Use of Images - consent must be given
@@ -395,7 +395,7 @@ export default function ConsentForm() {
                     onChange={handleInputChange}
                     className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <span className="text-gray-700">I DO give consent for my child to be photographed and/or video'd.</span>
+                  <span className="text-gray-700">I DO give consent for my child to be photographed and/or videoed.</span>
                 </label>
 
                 <label className="flex items-center space-x-3">
@@ -406,7 +406,7 @@ export default function ConsentForm() {
                     onChange={handleInputChange}
                     className="h-5 w-5 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
                   />
-                  <span className="text-gray-700">I DO NOT consent</span>
+                  <span className="text-gray-700">I DO NOT give consent for my child to be photographed and/or videoed.</span>
                 </label>
               </div>
 
