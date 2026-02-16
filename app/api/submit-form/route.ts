@@ -235,10 +235,11 @@ async function generatePDF(body: Record<string, unknown>): Promise<string> {
       })
   doc.text(`Date: ${submissionDate}`, margin, yPos)
 
-  // Return PDF as base64 string (extract from data URI)
-  const dataUri = doc.output('datauri')
-  // Extract base64 part after the comma
-  return dataUri.split(',')[1]
+  // Return PDF as base64 string
+  // Use arraybuffer and convert to base64
+  const arrayBuffer = doc.output('arraybuffer')
+  const buffer = Buffer.from(arrayBuffer)
+  return buffer.toString('base64')
 }
 
 export async function POST(request: Request) {
